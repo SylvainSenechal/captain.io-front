@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import './App.css'
-import { get, put } from "./utils/requests.js";
+import { get, put } from "./utils/Requests.js";
 
 const envData = {
   apiURL:
