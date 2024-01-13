@@ -4,7 +4,7 @@ import { get, put } from "./utils/Requests";
 
 const envData = {
   apiURL:
-    process.env.NODE_ENV === "production" ? "https://api.lemgo.io" : "http://localhost:8080",
+    process.env.NODE_ENV === "production" ? "https://api.captain.lemgo.io" : "http://localhost:8080",
 };
 export { envData };
 
