@@ -5,7 +5,7 @@ import { get, put } from "./utils/Requests";
 const envData = {
   apiURL:
     process.env.NODE_ENV === "production" ? "https://api.lemgo.io" : "http://localhost:8080",
-  websocketURL: process.env.NODE_ENV === "production" ? "ws://api.lemgo.io/ws/" : "ws://127.0.0.1:8080/ws/",
+  websocketURL: process.env.NODE_ENV === "production" ? "wss://api.lemgo.io/ws/" : "ws://127.0.0.1:8080/ws/",
 };
 export { envData };
 
