@@ -4,8 +4,8 @@ import { get, put } from "./utils/Requests";
 
 const envData = {
   apiURL:
-    process.env.NODE_ENV === "production" ? "https://api.captain.lemgo.io" : "http://localhost:8080",
-  websocketURL: process.env.NODE_ENV === "production" ? "ws://api.captain.lemgo.io/ws/" : "ws://127.0.0.1:8080/ws/",
+    process.env.NODE_ENV === "production" ? "https://api.lemgo.io" : "http://localhost:8080",
+  websocketURL: process.env.NODE_ENV === "production" ? "ws://api.lemgo.io/ws/" : "ws://127.0.0.1:8080/ws/",
 };
 export { envData };
 
@@ -34,6 +34,8 @@ function App() {
 
   useEffect(() => {
     if (playerUUID != "") {
+    console.log("NEW WEBSOCKET")
+    console.log("NEW WEBSOCKET")
     console.log("NEW WEBSOCKET")
 
     const s = new WebSocket(`${envData.websocketURL}${playerUUID}`)
@@ -109,6 +111,9 @@ function App() {
           <div>
             <div> {lobby.status}, {lobby.nb_users}</div>
             <button onClick={() => joinLobby(id)}>
+              join lobby
+              join lobby
+              join lobby
               join lobby
             </button>
          </div>
