@@ -5,6 +5,7 @@ import { get, put } from "./utils/Requests";
 const envData = {
   apiURL:
     process.env.NODE_ENV === "production" ? "https://api.captain.lemgo.io" : "http://localhost:8080",
+  websocketURL: process.env.NODE_ENV === "production" ? "ws://api.captain.lemgo.io/ws/" : "ws://127.0.0.1:8080/ws/",
 };
 export { envData };
 
@@ -34,7 +35,8 @@ function App() {
   useEffect(() => {
     if (playerUUID != "") {
     console.log("NEW WEBSOCKET")
-    const s = new WebSocket("ws://127.0.0.1:8080/ws/" + playerUUID)
+
+    const s = new WebSocket(`${envData.websocketURL}${playerUUID}`)
     s.addEventListener("open", (event) => {
       setSocket(s)
       setIsConnected(true)
