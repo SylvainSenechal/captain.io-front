@@ -5,7 +5,7 @@
   grid-template-columns: repeat(6, 1fr);
   grid-template-rows: 1fr 7fr 1fr;
   grid-template-areas: "ping appTitle appTitle appTitle appTitle ."
-                      ". . . main main ."
+                      ". main main main main ."
                       "global-chat global-chat footer footer lobbyChat lobbyChat";
   justify-items: stretch;
   align-items: center;
@@ -43,14 +43,34 @@
   display: flex;
 }
 
-.globalChat {
-  grid-area: global-chat;
-  display: flex;
-  flex-direction: column;
+
+
+
+.buttonForbidden {
+  width: 30%;
+  height: 40px;
+  background-color: #909090;
+  appearance: none;
+  border: 1px solid rgba(27, 31, 35, .15);
+  border-radius: 6px;
+  box-shadow: rgba(27, 31, 35, .1) 0 1px 0;
+  box-sizing: border-box;
+  color: #fff;
+  cursor: not-allowed;
+  display: inline-block;
+  font-family: -apple-system, system-ui, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  font-size: 14px;
+  font-weight: 600;
+  /* line-height: 20px; */
+  text-align: center;
+  text-decoration: none;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  vertical-align: middle;
+  white-space: nowrap;
 }
 
-.lobbyChat {
-  grid-area: lobbyChat;
-  display: flex;
-  flex-direction: column;
+.buttonJoinLobby {
+  background-color: red;
 }

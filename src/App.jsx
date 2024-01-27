@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import "./App.css";
+import "./Chats.css";
 import { get, put } from "./utils/Requests";
 
 const envData = {
@@ -16,6 +17,7 @@ export { envData };
 
 function App() {
   const [playerUUID, setPlayerUUID] = useState("");
+  const [updatePlayerName, setUpdatePlayerName] = useState("");
   const [playingInLobbyID, setPlayingInLobbyID] = useState(-1);
   const [nbUsers, setNbUsers] = useState(0);
   const [lobbiesStatus, setLobbiesStatus] = useState([]);
@@ -42,10 +44,6 @@ function App() {
 
   useEffect(() => {
     if (playerUUID != "") {
-      console.log("NEW WEBSOCKET");
-      console.log("NEW WEBSOCKET");
-      console.log("NEW WEBSOCKET");
-
       const s = new WebSocket(`${envData.websocketURL}${playerUUID}`);
       s.addEventListener("open", (event) => {
         setSocket(s);
@@ -68,30 +66,39 @@ function App() {
     console.log("event", event);
     if (event.data.startsWith("/pong")) {
       setLatency(Date.now() - latencyRef.current);
-    } else if (event.data.startsWith("/lobbiesUpdate")) {
+    } else if (event.data.startsWith("/lobbiesGeneralUpdate")) {
       setLobbiesStatus(JSON.parse(event.data.split(" ")[1]).lobbies);
       setNbUsers(JSON.parse(event.data.split(" ")[1]).total_users_connected);
-      console.log(JSON.parse(event.data.split(" ")[1]).lobbies);
     } else if (event.data.startsWith("/lobbyJoined")) {
       setPlayingInLobbyID(event.data.split(" ")[1]);
     } else if (event.data.startsWith("/globalChatSync")) {
-      console.log("ok 1");
       setGlobalChat(JSON.parse(event.data.substring(16)));
+      scrollGlobalBottom("globalMessages");
     } else if (event.data.startsWith("/globalChatNewMessage")) {
       setGlobalChat((previousChat) => [
         ...previousChat,
         JSON.parse(event.data.substring(22)),
       ]);
+      scrollGlobalBottom("globalMessages");
     } else if (event.data.startsWith("/lobbyChatSync")) {
-      console.log(JSON.parse(event.data.substring(15)));
       setLobbyChat(JSON.parse(event.data.substring(15)));
+      scrollGlobalBottom("lobbyMessages");
     } else if (event.data.startsWith("/lobbyChatNewMessage")) {
-      console.log(JSON.parse(event.data.substring(21)));
       setLobbyChat((previousChat) => [
         ...previousChat,
         JSON.parse(event.data.substring(21)),
       ]);
+      scrollGlobalBottom("lobbyMessages");
     }
+  };
+  const scrollGlobalBottom = (idMessagesList) => {
+    // Scroll to the bottom of the messages list
+    // todo : not scrolling completely at the bottom..
+    // todo : not working when loading messages list for the first time
+    const messageDiv = document.getElementById(idMessagesList);
+    const messagesDivViewHeight = messageDiv.clientHeight; // The height that we can view
+    const messagesDivHeight = messageDiv.scrollHeight; // The height if we could view the whole div with a big monitor
+    messageDiv.scroll(0, messagesDivHeight - messagesDivViewHeight);
   };
 
   useEffect(() => {
@@ -108,8 +115,9 @@ function App() {
     latencyRef.current = Date.now();
     socket.send("/ping ");
   };
-  const joinLobby = (id) => socket.send("/joinlobby " + id);
-  const sendNewLobbyMessage = () => {
+  const joinLobby = (id) => socket.send("/joinLobby " + id);
+  const sendNewLobbyMessage = (event) => {
+    event.preventDefault();
     if (playingInLobbyID != -1) {
       socket.send(
         "/sendLobbyMessage " + playingInLobbyID + " " + newLobbyMessage
@@ -117,17 +125,19 @@ function App() {
       setNewLobbyMessage("");
     }
   };
-  const sendNewGlobalMessage = () => {
+  const sendNewGlobalMessage = (event) => {
+    event.preventDefault();
     socket.send("/sendGlobalMessage " + newGlobalMessage);
     setNewGlobalMessage("");
   };
-
-  document.onclick = async () => {
-    console.log(lobbyChat);
+  const updateUsername = async (event) => {
+    event.preventDefault();
     try {
       await put(`/players/${playerUUID}`, undefined, {
-        username: "sylvain",
+        username: updatePlayerName,
       });
+      setUpdatePlayerName("");
+      // todo : get response new username if ok
     } catch (error) {
       console.log("set username error : " + error);
     }
@@ -143,48 +153,83 @@ function App() {
       <div className="main">
         <div> nb users {nbUsers}</div>
         <div>player {playerUUID}</div>
+        <form onSubmit={updateUsername}>
+          <label htmlFor="username"> pick username </label>
+          <input
+            type="text"
+            name="username"
+            value={updatePlayerName}
+            onChange={(e) => setUpdatePlayerName(e.target.value)}
+            required
+          />
+          <input type="submit" value="Send" />
+        </form>
         {lobbiesStatus.map((lobby, id) => {
           return (
             <div className="lobbyPresentation">
-              <div>
-                {lobby.status}, {lobby.nb_users}
-              </div>
-              <button onClick={() => joinLobby(id)}>join lobby</button>
+              {lobby.nb_connected >= lobby.player_capacity ? (
+                <div>
+                  {lobby.status}, {lobby.nb_connected} / {lobby.player_capacity}
+                  <button
+                    className="buttonForbidden"
+                    onClick={() => joinLobby(id)}
+                  >
+                    join lobby
+                  </button>
+                </div>
+              ) : (
+                <div>
+                  {lobby.status}, {lobby.nb_connected} / {lobby.player_capacity}
+                  <button
+                    className="buttonJoinLobby"
+                    onClick={() => joinLobby(id)}
+                  >
+                    join lobby
+                  </button>
+                </div>
+              )}
             </div>
           );
         })}
-        {/* TODO :Connection status : connected/reconnecting */}
       </div>
       <div className="globalChat">
-        <label>
-          New message:
+        <div className="messagesList" id="globalMessages">
+          {globalChat.map((message, idMessage) => (
+            <div> message: {message.message} </div>
+          ))}
+        </div>
+        <form className="formPostMessage" onSubmit={sendNewGlobalMessage}>
           <input
+            className="chatText"
             type="text"
+            placeholder="new message"
             value={newGlobalMessage}
             onChange={(e) => setNewGlobalMessage(e.target.value)}
+            required
           />
-          <button onClick={() => sendNewGlobalMessage()}>send</button>
-        </label>
-        {globalChat.map((message, idMessage) => (
-          <div> message: {message.message} </div>
-        ))}
+          <input className="postMessageBtn" type="submit" value="Send" />
+        </form>
       </div>
       <div className="lobbyChat">
         {playingInLobbyID !== -1 ? (
-          <div>
-            <label>
-              New lobby message:
+          <>
+            <div className="messagesList" id="lobbyMessages">
+              {lobbyChat.map((message, idMessage) => (
+                <div> message: {message.message} </div>
+              ))}
+            </div>
+            <form className="formPostMessage" onSubmit={sendNewLobbyMessage}>
               <input
+                className="chatText"
                 type="text"
+                placeholder="new message"
                 value={newLobbyMessage}
                 onChange={(e) => setNewLobbyMessage(e.target.value)}
+                required
               />
-              <button onClick={() => sendNewLobbyMessage()}>send</button>
-            </label>
-            {lobbyChat.map((message, idMessage) => (
-              <div> message: {message.message} </div>
-            ))}
-          </div>
+              <input className="postMessageBtn" type="submit" value="Send" />
+            </form>
+          </>
         ) : null}
       </div>
     </div>

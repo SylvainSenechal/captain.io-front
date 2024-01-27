@@ -1,0 +1,49 @@
+.globalChat {
+    grid-area: global-chat;
+    position: relative;
+    overflow: auto;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .lobbyChat {
+    grid-area: lobbyChat;
+    position: relative;
+    overflow: auto;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+.messagesList {
+    overflow: auto;
+}
+
+.formPostMessage {
+    display: flex;
+    flex-direction: row;
+    border: thin solid grey;
+    border-radius: 15px;
+    width: 94%;
+    padding: 3px;
+    margin-left: 3%;
+    margin-top: 4px;
+}
+
+.chatText {
+    border-radius: 15px;
+    border-width: thin;
+    display: flex;
+    flex-direction: row;
+    flex-grow: 2;
+    border: none;
+    padding-left: 7px;
+    margin-right: 5px;
+}
+
+.postMessageBtn {
+    /* border: 1px solid rgb(255, 0, 115); */
+    border-radius: 15px;
+    border-style: none;
+}
