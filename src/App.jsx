@@ -2,6 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import "./App.css";
 import "./Chats.css";
 import { get, put } from "./utils/Requests";
+import Game from "./Game";
+import GameMenu from "./GameMenu";
+import Chats from "./Chats";
 
 const envData = {
   apiURL:
@@ -16,6 +19,9 @@ const envData = {
 export { envData };
 
 function App() {
+  const [inGame, setInGame] = useState(false);
+
+  const [currentTime, setCurrentTime] = useState(new Date());
   const [playerUUID, setPlayerUUID] = useState("");
   const [updatePlayerName, setUpdatePlayerName] = useState("");
   const [playingInLobbyID, setPlayingInLobbyID] = useState(-1);
@@ -26,9 +32,7 @@ function App() {
   const [latencyCheckStart, setLatencyCheckStart] = useState(0);
   const latencyRef = useRef(latencyCheckStart);
   const [socket, setSocket] = useState();
-  const [newGlobalMessage, setNewGlobalMessage] = useState("");
   const [globalChat, setGlobalChat] = useState([]);
-  const [newLobbyMessage, setNewLobbyMessage] = useState("");
   const [lobbyChat, setLobbyChat] = useState([]);
 
   useEffect(() => {
@@ -66,6 +70,8 @@ function App() {
     console.log("event", event);
     if (event.data.startsWith("/pong")) {
       setLatency(Date.now() - latencyRef.current);
+    } else if (event.data.startsWith("/gameStarted")) {
+      setInGame(true);
     } else if (event.data.startsWith("/lobbiesGeneralUpdate")) {
       setLobbiesStatus(JSON.parse(event.data.split(" ")[1]).lobbies);
       setNbUsers(JSON.parse(event.data.split(" ")[1]).total_users_connected);
@@ -102,11 +108,18 @@ function App() {
   };
 
   useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
     if (socket && isConnected) {
       const interval = setInterval(() => {
         ping();
         // todo : detect when pong is not sent back = disconnected, otherwise it just doesnt show
-      }, 2000);
+      }, 2500);
       return () => clearInterval(interval);
     }
   }, [isConnected, socket]);
@@ -116,20 +129,7 @@ function App() {
     socket.send("/ping ");
   };
   const joinLobby = (id) => socket.send("/joinLobby " + id);
-  const sendNewLobbyMessage = (event) => {
-    event.preventDefault();
-    if (playingInLobbyID != -1) {
-      socket.send(
-        "/sendLobbyMessage " + playingInLobbyID + " " + newLobbyMessage
-      );
-      setNewLobbyMessage("");
-    }
-  };
-  const sendNewGlobalMessage = (event) => {
-    event.preventDefault();
-    socket.send("/sendGlobalMessage " + newGlobalMessage);
-    setNewGlobalMessage("");
-  };
+
   const updateUsername = async (event) => {
     event.preventDefault();
     try {
@@ -143,7 +143,17 @@ function App() {
     }
   };
 
-  return (
+  return inGame ? (
+    <>
+      <Game />
+      <Chats
+        socket={socket}
+        playingInLobbyID={playingInLobbyID}
+        globalChat={globalChat}
+        lobbyChat={lobbyChat}
+      />
+    </>
+  ) : (
     <div className="frontPage">
       <h1 className="appTitle">Captain.io</h1>
       <div className="ping">
@@ -167,9 +177,14 @@ function App() {
         {lobbiesStatus.map((lobby, id) => {
           return (
             <div className="lobbyPresentation">
-              {lobby.nb_connected >= lobby.player_capacity ? (
+              {lobby.status !== "AwaitingUsers" ? (
                 <div>
                   {lobby.status}, {lobby.nb_connected} / {lobby.player_capacity}
+                  {Math.floor(
+                    (new Date(lobby.next_starting_time * 1000).getTime() -
+                      Math.floor(currentTime)) /
+                      1000
+                  )}
                   <button
                     className="buttonForbidden"
                     onClick={() => joinLobby(id)}
@@ -192,49 +207,14 @@ function App() {
           );
         })}
       </div>
-      <div className="globalChat">
-        <div className="messagesList" id="globalMessages">
-          {globalChat.map((message, idMessage) => (
-            <div> message: {message.message} </div>
-          ))}
-        </div>
-        <form className="formPostMessage" onSubmit={sendNewGlobalMessage}>
-          <input
-            className="chatText"
-            type="text"
-            placeholder="new message"
-            value={newGlobalMessage}
-            onChange={(e) => setNewGlobalMessage(e.target.value)}
-            required
-          />
-          <input className="postMessageBtn" type="submit" value="Send" />
-        </form>
-      </div>
-      <div className="lobbyChat">
-        {playingInLobbyID !== -1 ? (
-          <>
-            <div className="messagesList" id="lobbyMessages">
-              {lobbyChat.map((message, idMessage) => (
-                <div> message: {message.message} </div>
-              ))}
-            </div>
-            <form className="formPostMessage" onSubmit={sendNewLobbyMessage}>
-              <input
-                className="chatText"
-                type="text"
-                placeholder="new message"
-                value={newLobbyMessage}
-                onChange={(e) => setNewLobbyMessage(e.target.value)}
-                required
-              />
-              <input className="postMessageBtn" type="submit" value="Send" />
-            </form>
-          </>
-        ) : null}
-      </div>
+      <Chats
+        socket={socket}
+        playingInLobbyID={playingInLobbyID}
+        globalChat={globalChat}
+        lobbyChat={lobbyChat}
+      />
     </div>
   );
-  ``;
 }
 
 export default App;
