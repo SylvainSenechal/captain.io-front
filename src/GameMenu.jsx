@@ -1,11 +1,35 @@
-const GameMenu = () => {
+import { useEffect, useRef, useState } from "react";
+
+const GameMenu = ({
+  socket,
+  nbUsers,
+  playerUUID,
+  lobbiesStatus,
+  currentTime,
+}) => {
+  const [updatePlayerName, setUpdatePlayerName] = useState("");
+
+  const updateUsername = async (event) => {
+    event.preventDefault();
+    try {
+      await put(`/players/${playerUUID}`, undefined, {
+        username: updatePlayerName,
+      });
+      setUpdatePlayerName("");
+      // todo : get response new username if ok
+    } catch (error) {
+      console.log("set username error : " + error);
+    }
+  };
+
+  const joinLobby = (id) => {
+    console.log("koin lobby");
+    socket.send("/joinLobby " + id);
+  };
+
   return (
-    <div className="frontPage">
+    <>
       <h1 className="appTitle">Captain.io</h1>
-      <div className="ping">
-        <button onClick={() => ping()}>ping</button>
-        <div>latency {latency}</div>
-      </div>
       <div className="main">
         <div> nb users {nbUsers}</div>
         <div>player {playerUUID}</div>
@@ -53,47 +77,7 @@ const GameMenu = () => {
           );
         })}
       </div>
-      <div className="globalChat">
-        <div className="messagesList" id="globalMessages">
-          {globalChat.map((message, idMessage) => (
-            <div> message: {message.message} </div>
-          ))}
-        </div>
-        <form className="formPostMessage" onSubmit={sendNewGlobalMessage}>
-          <input
-            className="chatText"
-            type="text"
-            placeholder="new message"
-            value={newGlobalMessage}
-            onChange={(e) => setNewGlobalMessage(e.target.value)}
-            required
-          />
-          <input className="postMessageBtn" type="submit" value="Send" />
-        </form>
-      </div>
-      <div className="lobbyChat">
-        {playingInLobbyID !== -1 ? (
-          <>
-            <div className="messagesList" id="lobbyMessages">
-              {lobbyChat.map((message, idMessage) => (
-                <div> message: {message.message} </div>
-              ))}
-            </div>
-            <form className="formPostMessage" onSubmit={sendNewLobbyMessage}>
-              <input
-                className="chatText"
-                type="text"
-                placeholder="new message"
-                value={newLobbyMessage}
-                onChange={(e) => setNewLobbyMessage(e.target.value)}
-                required
-              />
-              <input className="postMessageBtn" type="submit" value="Send" />
-            </form>
-          </>
-        ) : null}
-      </div>
-    </div>
+    </>
   );
 };
 

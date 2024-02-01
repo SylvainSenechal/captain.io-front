@@ -4,6 +4,7 @@ import "./Chats.css";
 import { get, put } from "./utils/Requests";
 import Game from "./Game";
 import GameMenu from "./GameMenu";
+import Ping from "./Ping";
 import Chats from "./Chats";
 
 const envData = {
@@ -23,17 +24,17 @@ function App() {
 
   const [currentTime, setCurrentTime] = useState(new Date());
   const [playerUUID, setPlayerUUID] = useState("");
-  const [updatePlayerName, setUpdatePlayerName] = useState("");
   const [playingInLobbyID, setPlayingInLobbyID] = useState(-1);
   const [nbUsers, setNbUsers] = useState(0);
   const [lobbiesStatus, setLobbiesStatus] = useState([]);
   const [isConnected, setIsConnected] = useState(false);
-  const [latency, setLatency] = useState(0);
-  const [latencyCheckStart, setLatencyCheckStart] = useState(0);
-  const latencyRef = useRef(latencyCheckStart);
+
   const [socket, setSocket] = useState();
   const [globalChat, setGlobalChat] = useState([]);
   const [lobbyChat, setLobbyChat] = useState([]);
+
+  const [eventData, setEventData] = useState("");
+  const [nbEventData, setNbEventData] = useState(0); // if 2 events are the same ("/pong"), they wont be trigger useEffect
 
   useEffect(() => {
     const requestPlayerUUID = async () => {
@@ -68,9 +69,9 @@ function App() {
 
   const onmessage = (event) => {
     console.log("event", event);
-    if (event.data.startsWith("/pong")) {
-      setLatency(Date.now() - latencyRef.current);
-    } else if (event.data.startsWith("/gameStarted")) {
+    setEventData(event.data);
+    setNbEventData((val) => val + 1);
+    if (event.data.startsWith("/gameStarted")) {
       setInGame(true);
     } else if (event.data.startsWith("/lobbiesGeneralUpdate")) {
       setLobbiesStatus(JSON.parse(event.data.split(" ")[1]).lobbies);
@@ -114,35 +115,6 @@ function App() {
     return () => clearInterval(interval);
   }, []);
 
-  useEffect(() => {
-    if (socket && isConnected) {
-      const interval = setInterval(() => {
-        ping();
-        // todo : detect when pong is not sent back = disconnected, otherwise it just doesnt show
-      }, 2500);
-      return () => clearInterval(interval);
-    }
-  }, [isConnected, socket]);
-
-  const ping = () => {
-    latencyRef.current = Date.now();
-    socket.send("/ping ");
-  };
-  const joinLobby = (id) => socket.send("/joinLobby " + id);
-
-  const updateUsername = async (event) => {
-    event.preventDefault();
-    try {
-      await put(`/players/${playerUUID}`, undefined, {
-        username: updatePlayerName,
-      });
-      setUpdatePlayerName("");
-      // todo : get response new username if ok
-    } catch (error) {
-      console.log("set username error : " + error);
-    }
-  };
-
   return inGame ? (
     <>
       <Game />
@@ -155,58 +127,20 @@ function App() {
     </>
   ) : (
     <div className="frontPage">
-      <h1 className="appTitle">Captain.io</h1>
-      <div className="ping">
-        <button onClick={() => ping()}>ping</button>
-        <div>latency {latency}</div>
-      </div>
-      <div className="main">
-        <div> nb users {nbUsers}</div>
-        <div>player {playerUUID}</div>
-        <form onSubmit={updateUsername}>
-          <label htmlFor="username"> pick username </label>
-          <input
-            type="text"
-            name="username"
-            value={updatePlayerName}
-            onChange={(e) => setUpdatePlayerName(e.target.value)}
-            required
-          />
-          <input type="submit" value="Send" />
-        </form>
-        {lobbiesStatus.map((lobby, id) => {
-          return (
-            <div className="lobbyPresentation">
-              {lobby.status !== "AwaitingUsers" ? (
-                <div>
-                  {lobby.status}, {lobby.nb_connected} / {lobby.player_capacity}
-                  {Math.floor(
-                    (new Date(lobby.next_starting_time * 1000).getTime() -
-                      Math.floor(currentTime)) /
-                      1000
-                  )}
-                  <button
-                    className="buttonForbidden"
-                    onClick={() => joinLobby(id)}
-                  >
-                    join lobby
-                  </button>
-                </div>
-              ) : (
-                <div>
-                  {lobby.status}, {lobby.nb_connected} / {lobby.player_capacity}
-                  <button
-                    className="buttonJoinLobby"
-                    onClick={() => joinLobby(id)}
-                  >
-                    join lobby
-                  </button>
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
+      <Ping
+        socket={socket}
+        isConnected={isConnected}
+        eventData={eventData}
+        nbEventData={nbEventData}
+      />
+      <GameMenu
+        socket={socket}
+        nbUsers={nbUsers}
+        playerUUID={playerUUID}
+        lobbiesStatus={lobbiesStatus}
+        currentTime={currentTime}
+      />
+
       <Chats
         socket={socket}
         playingInLobbyID={playingInLobbyID}
