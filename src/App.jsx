@@ -1,6 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import "./App.css";
-import "./Chats.css";
 import { get, put } from "./utils/Requests";
 import Game from "./Game";
 import GameMenu from "./GameMenu";
@@ -20,12 +18,16 @@ const envData = {
 export { envData };
 
 function App() {
+  const [playerInfos, setPlayerInfos] = useState({
+    name: "",
+    uuid: "",
+  });
+
   const [inGame, setInGame] = useState(false);
 
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [playerUUID, setPlayerUUID] = useState("");
   const [playingInLobbyID, setPlayingInLobbyID] = useState(-1);
-  const [nbUsers, setNbUsers] = useState(0);
+  const [nbPlayers, setNbPlayers] = useState(0);
   const [lobbiesStatus, setLobbiesStatus] = useState([]);
   const [isConnected, setIsConnected] = useState(false);
 
@@ -36,20 +38,36 @@ function App() {
   const [eventData, setEventData] = useState("");
   const [nbEventData, setNbEventData] = useState(0); // if 2 events are the same ("/pong"), they wont be trigger useEffect
 
-  useEffect(() => {
-    const requestPlayerUUID = async () => {
-      try {
-        setPlayerUUID(await get(`/players/uuid`));
-      } catch (error) {
-        console.log("getPlayerUUID error : " + error);
-      }
-    };
-    requestPlayerUUID();
-  }, []);
+  // todo : group all api "route" under a file
 
   useEffect(() => {
-    if (playerUUID != "") {
-      const s = new WebSocket(`${envData.websocketURL}${playerUUID}`);
+    const restoreSession = async () => {
+      const strPlayerData = window.localStorage.getItem("playerInfos");
+      const playerData = JSON.parse(strPlayerData);
+      if (playerData === null) {
+        try {
+          const newPlayer = await get(`/players/new`);
+          setPlayerInfos(newPlayer);
+          console.log(newPlayer);
+          window.localStorage.setItem("playerInfos", JSON.stringify(newPlayer));
+        } catch (error) {
+          console.log("requestNewPlayer error : " + error);
+        }
+      } else {
+        console.log(JSON.parse(strPlayerData));
+        setPlayerInfos(JSON.parse(strPlayerData));
+      }
+    };
+
+    restoreSession();
+  }, []);
+
+  document.onclick = () => console.log(playerInfos);
+
+  useEffect(() => {
+    if (playerInfos.name != "" && playerInfos.uuid != "") {
+      console.log("OPENING new connection");
+      const s = new WebSocket(`${envData.websocketURL}${playerInfos.uuid}`);
       s.addEventListener("open", (event) => {
         setSocket(s);
         setIsConnected(true);
@@ -65,7 +83,7 @@ function App() {
         console.log("connection error ", event.data);
       });
     }
-  }, [playerUUID]);
+  }, [playerInfos]);
 
   const onmessage = (event) => {
     console.log("event", event);
@@ -75,7 +93,9 @@ function App() {
       setInGame(true);
     } else if (event.data.startsWith("/lobbiesGeneralUpdate")) {
       setLobbiesStatus(JSON.parse(event.data.split(" ")[1]).lobbies);
-      setNbUsers(JSON.parse(event.data.split(" ")[1]).total_users_connected);
+      setNbPlayers(
+        JSON.parse(event.data.split(" ")[1]).total_players_connected
+      );
     } else if (event.data.startsWith("/lobbyJoined")) {
       setPlayingInLobbyID(event.data.split(" ")[1]);
     } else if (event.data.startsWith("/globalChatSync")) {
@@ -116,17 +136,25 @@ function App() {
   }, []);
 
   return inGame ? (
-    <>
-      <Game />
+    <div className="frontPage">
+      <h1 className="appTitle">Captain.io</h1>
+      <Ping
+        socket={socket}
+        isConnected={isConnected}
+        eventData={eventData}
+        nbEventData={nbEventData}
+      />
+      <Game socket={socket} eventData={eventData} nbEventData={nbEventData} />
       <Chats
         socket={socket}
         playingInLobbyID={playingInLobbyID}
         globalChat={globalChat}
         lobbyChat={lobbyChat}
       />
-    </>
+    </div>
   ) : (
     <div className="frontPage">
+      <h1 className="appTitle">Captain.io</h1>
       <Ping
         socket={socket}
         isConnected={isConnected}
@@ -135,12 +163,12 @@ function App() {
       />
       <GameMenu
         socket={socket}
-        nbUsers={nbUsers}
-        playerUUID={playerUUID}
+        nbPlayers={nbPlayers}
+        playerInfos={playerInfos}
+        setPlayerInfos={setPlayerInfos}
         lobbiesStatus={lobbiesStatus}
         currentTime={currentTime}
       />
-
       <Chats
         socket={socket}
         playingInLobbyID={playingInLobbyID}

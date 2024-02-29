@@ -1,0 +1,76 @@
+.frontPage {
+  display: grid;
+  width: 100vw;
+  height: 100vh;
+  grid-template-columns: repeat(8, 1fr);
+  grid-template-rows: 1fr 7fr 1fr;
+  grid-template-areas: "ping appTitle appTitle appTitle appTitle appTitle appTitle ."
+                      ". main main main main main main ."
+                      "global-chat global-chat footer footer footer footer lobbyChat lobbyChat";
+  justify-items: stretch;
+  align-items: center;
+  justify-content: start;
+}
+
+.appTitle {
+  grid-area: appTitle;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px;
+  margin: 30px;
+  box-shadow: 1px 2px 5px rgb(0 0 0 / 15%);
+  border-radius: 20px;
+}
+
+.main {
+  grid-area: main;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px;
+  margin: 10px;
+  box-shadow: 1px 2px 5px rgb(0 0 0 / 15%);
+  border-radius: 20px;
+}
+
+.ping {
+  grid-area: ping;
+}
+
+.lobbiesMenu {
+  width: 400px;
+}
+
+.lobbyPresentation {
+  display: flex;
+  justify-content: space-between;
+}
+
+.buttonForbidden {
+  background-color: grey;
+  cursor: not-allowed;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+.buttonJoinLobby {
+  background-color: red;
+}
+
+#requestRandomName {
+  all: revert;
+}
+
+#canEditPlayername {
+  border-color: green;
+  border-radius: 7px;
+  border-width: 7px;
+}
+
+#cantEditPlayername {
+  border-color: red;
+  border-radius: 7px;
+  border-width: 7px;
+}

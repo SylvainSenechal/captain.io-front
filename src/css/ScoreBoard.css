@@ -1,0 +1,5 @@
+.scoreBoard, th, td {
+    border-collapse: collapse;
+    border: 3px solid purple;
+}
+
