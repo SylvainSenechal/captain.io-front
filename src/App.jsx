@@ -4,6 +4,10 @@ import Game from "./Game";
 import GameMenu from "./GameMenu";
 import Ping from "./Ping";
 import Chats from "./Chats";
+import imgMountain from "/src/assets/mountain.png";
+import imgCrown from "/src/assets/crown.png";
+import imgCastle from "/src/assets/castle.png";
+// https://game-icons.net/1x1/delapouite/mountain-cave.html#download
 
 const envData = {
   apiURL:
@@ -37,7 +41,7 @@ function App() {
 
   const [eventData, setEventData] = useState("");
   const [nbEventData, setNbEventData] = useState(0); // if 2 events are the same ("/pong"), they wont be trigger useEffect
-
+  const [images, setImages] = useState({});
   // todo : group all api "route" under a file
 
   useEffect(() => {
@@ -60,6 +64,16 @@ function App() {
     };
 
     restoreSession();
+  }, []);
+
+  useEffect(() => {
+    const mountain = new Image();
+    mountain.src = imgMountain;
+    const crown = new Image();
+    crown.src = imgCrown;
+    const castle = new Image();
+    castle.src = imgCastle;
+    setImages({ mountain: mountain, crown: crown, castle: castle });
   }, []);
 
   document.onclick = () => console.log(playerInfos);
@@ -91,6 +105,9 @@ function App() {
     setNbEventData((val) => val + 1);
     if (event.data.startsWith("/gameStarted")) {
       setInGame(true);
+    } else if (event.data.startsWith("/winnerIs")) {
+      setInGame(false);
+      // todo : print winner, only set false after clicking "ok" dialog
     } else if (event.data.startsWith("/lobbiesGeneralUpdate")) {
       setLobbiesStatus(JSON.parse(event.data.split(" ")[1]).lobbies);
       setNbPlayers(
@@ -144,7 +161,12 @@ function App() {
         eventData={eventData}
         nbEventData={nbEventData}
       />
-      <Game socket={socket} eventData={eventData} nbEventData={nbEventData} />
+      <Game
+        socket={socket}
+        eventData={eventData}
+        nbEventData={nbEventData}
+        images={images}
+      />
       <Chats
         socket={socket}
         playingInLobbyID={playingInLobbyID}

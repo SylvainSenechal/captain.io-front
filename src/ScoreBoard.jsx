@@ -1,6 +1,26 @@
 import { useEffect, useRef, useState } from "react";
 
 const ScoreBoard = ({ scoreBoard }) => {
+  scoreBoard.sort((p1, p2) => {
+    if (p1.total_positions < p2.total_positions) {
+      return 1;
+    } else if (p1.total_positions > p2.total_positions) {
+      return -1;
+    }
+
+    if (p1.total_troops < p2.total_troops) {
+      return 1;
+    } else if (p1.total_troops > p2.total_troops) {
+      return -1;
+    }
+
+    if (p1.player_name < p2.player_name) {
+      return -1;
+    } else if (p1.player_name > p2.player_name) {
+      return 1;
+    }
+    return 0;
+  });
   return (
     <table className="scoreBoard">
       <tr>
@@ -10,7 +30,7 @@ const ScoreBoard = ({ scoreBoard }) => {
         <th>Troops</th>
       </tr>
       {scoreBoard
-        .sort((a, b) => (a.total_troops < b.total_troops ? 1 : -1)) // todo : deal with troop1==troop2
+        // .sort((a, b) => (a.total_troops < b.total_troops ? 1 : -1)) // todo : deal with troop1==troop2
         .map((score, rank) => {
           return (
             <tr>
