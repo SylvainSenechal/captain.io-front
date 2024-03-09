@@ -26,6 +26,10 @@ function App() {
     name: "",
     uuid: "",
   });
+  const [movesPlayer, setMovesPlayer] = useState({
+    queued_moves: [],
+    xy: [0, 0],
+  });
 
   const [inGame, setInGame] = useState(false);
 
@@ -76,8 +80,6 @@ function App() {
     setImages({ mountain: mountain, crown: crown, castle: castle });
   }, []);
 
-  document.onclick = () => console.log(playerInfos);
-
   useEffect(() => {
     if (playerInfos.name != "" && playerInfos.uuid != "") {
       console.log("OPENING new connection");
@@ -100,7 +102,7 @@ function App() {
   }, [playerInfos]);
 
   const onmessage = (event) => {
-    console.log("event", event);
+    // console.log("event", event);
     setEventData(event.data);
     setNbEventData((val) => val + 1);
     if (event.data.startsWith("/gameStarted")) {
@@ -133,6 +135,9 @@ function App() {
         JSON.parse(event.data.substring(21)),
       ]);
       scrollGlobalBottom("lobbyMessages");
+    } else if (event.data.startsWith("/myMoves")) {
+      const moves = JSON.parse(event.data.substring(9));
+      setMovesPlayer({ queued_moves: moves.queued_moves, xy: moves.xy });
     }
   };
   const scrollGlobalBottom = (idMessagesList) => {
@@ -166,6 +171,8 @@ function App() {
         eventData={eventData}
         nbEventData={nbEventData}
         images={images}
+        movesPlayer={movesPlayer}
+        setMovesPlayer={setMovesPlayer}
       />
       <Chats
         socket={socket}

@@ -1,7 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import ScoreBoard from "./ScoreBoard";
 
-const Game = ({ socket, eventData, nbEventData, images }) => {
+const Game = ({
+  socket,
+  eventData,
+  nbEventData,
+  images,
+  movesPlayer,
+  setMovesPlayer,
+}) => {
   const [game, setGame] = useState({
     board_game: [[]],
   });
@@ -28,6 +35,11 @@ const Game = ({ socket, eventData, nbEventData, images }) => {
       canvas.ctx.clearRect(0, 0, canvas.canvas.width, canvas.canvas.height);
 
       setGame(JSON.parse(eventData.substring(12)));
+      let gameStatus = JSON.parse(eventData.substring(12)); // todo : clean redundancy
+      setMovesPlayer({
+        queued_moves: gameStatus.moves.queued_moves,
+        xy: gameStatus.moves.xy,
+      });
 
       let newScoreBoard = [];
       if (game.score_board != undefined) {
@@ -41,28 +53,37 @@ const Game = ({ socket, eventData, nbEventData, images }) => {
         }
       }
 
+      // 1. Draw whole map background in white
+      canvas.ctx.fillStyle = "rgba(255, 255, 255, 1)";
+      canvas.ctx.fillRect(
+        0,
+        0,
+        GRID_SIZE * game.board_game.length,
+        GRID_SIZE * game.board_game[0].length
+      );
       setScoreBoard(newScoreBoard);
       for (let i = 0; i < game.board_game.length; i++) {
         for (let j = 0; j < game.board_game[i].length; j++) {
-          // 1. Draw grid
+          // 2. Draw grid
           canvas.ctx.strokeRect(
             i * GRID_SIZE,
             j * GRID_SIZE,
             GRID_SIZE,
             GRID_SIZE
           );
-          // 2. Draw background color
+
+          // 3. Draw occupied tiles background color
           if (game.board_game[i][j].status === "Occupied") {
             const color =
               game.score_board[game.board_game[i][j].player_name].color;
             if (color == "Grey") {
-              canvas.ctx.fillStyle = "rgba(125, 125, 125, 0.3)";
+              canvas.ctx.fillStyle = "rgba(125, 125, 125, 0.8)";
             } else if (color === "Red") {
-              canvas.ctx.fillStyle = "rgba(255, 0, 0, 0.3)";
+              canvas.ctx.fillStyle = "rgba(255, 0, 0, 0.8)";
             } else if (color === "Blue") {
-              canvas.ctx.fillStyle = "rgba(0, 0, 255, 0.3)";
+              canvas.ctx.fillStyle = "rgba(0, 0, 255, 0.8)";
             } else if (color === "Pink") {
-              canvas.ctx.fillStyle = "rgba(255, 0, 255, 0.3)";
+              canvas.ctx.fillStyle = "rgba(255, 0, 255, 0.8)";
             }
             canvas.ctx.fillRect(
               i * GRID_SIZE,
@@ -71,7 +92,19 @@ const Game = ({ socket, eventData, nbEventData, images }) => {
               GRID_SIZE
             );
           }
-          // 3. Draw tile type
+
+          // 4. Darken hidden tiles
+          canvas.ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+          if (game.board_game[i][j].hidden) {
+            canvas.ctx.fillRect(
+              i * GRID_SIZE,
+              j * GRID_SIZE,
+              GRID_SIZE,
+              GRID_SIZE
+            );
+          }
+
+          // 5. Draw tile type
           if (game.board_game[i][j].tile_type === "Kingdom") {
             canvas.ctx.drawImage(
               images.crown,
@@ -97,7 +130,8 @@ const Game = ({ socket, eventData, nbEventData, images }) => {
               GRID_SIZE
             );
           }
-          // 4. Draw troops quantity
+
+          // 6. Draw troops quantity
           if (
             game.board_game[i][j].status === "Occupied" ||
             game.board_game[i][j].tile_type === "Castle"
@@ -107,6 +141,37 @@ const Game = ({ socket, eventData, nbEventData, images }) => {
               game.board_game[i][j].nb_troops,
               i * GRID_SIZE + GRID_SIZE / 2,
               j * GRID_SIZE + GRID_SIZE / 2
+            );
+          }
+
+          // 7. Draw upcoming moves
+          // 7.1 current queue position
+          let currentX = movesPlayer.xy[0];
+          let currentY = movesPlayer.xy[1];
+          canvas.ctx.strokeStyle = "white";
+          canvas.ctx.strokeRect(
+            currentX * GRID_SIZE + 3,
+            currentY * GRID_SIZE + 3,
+            GRID_SIZE - 6,
+            GRID_SIZE - 6
+          );
+          // 7.2 whole queue
+          canvas.ctx.strokeStyle = "black";
+          for (let move of movesPlayer.queued_moves) {
+            if (move === "Up") {
+              currentY--;
+            } else if (move === "Down") {
+              currentY++;
+            } else if (move === "Left") {
+              currentX--;
+            } else if (move === "Right") {
+              currentX++;
+            }
+            canvas.ctx.strokeRect(
+              currentX * GRID_SIZE + 3,
+              currentY * GRID_SIZE + 3,
+              GRID_SIZE - 6,
+              GRID_SIZE - 6
             );
           }
         }

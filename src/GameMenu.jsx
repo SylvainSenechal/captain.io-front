@@ -38,14 +38,12 @@ const GameMenu = ({
     try {
       let newName = await get(`/players/name/random`);
       setUpdatePlayerName(newName);
-      console.log(newName);
     } catch (error) {
       console.log("requestRandomName error : " + error);
     }
   };
 
   const checkValidPlayerName = async (newName) => {
-    console.log("NEW CHECK");
     setUpdatePlayerName(newName);
     try {
       setCanEditName(
@@ -59,7 +57,6 @@ const GameMenu = ({
   };
 
   const joinLobby = (id) => {
-    console.log("koin lobby");
     socket.send("/joinLobby " + id);
   };
 
