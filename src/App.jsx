@@ -9,6 +9,7 @@ import imgCrown from "/src/assets/crown.png";
 import imgCastle from "/src/assets/castle.png";
 // https://game-icons.net/1x1/delapouite/mountain-cave.html#download
 
+// todo : display is websocket connected + button to reconnect
 const envData = {
   apiURL:
     process.env.NODE_ENV === "production"
@@ -93,10 +94,10 @@ function App() {
 
       s.addEventListener("close", (event) => {
         setIsConnected(false);
-        console.log("connection closed ", event.data, isConnected);
+        console.log("connection closed ", event, isConnected);
       });
       s.addEventListener("error", (event) => {
-        console.log("connection error ", event.data);
+        console.log("connection error ", event);
       });
     }
   }, [playerInfos]);

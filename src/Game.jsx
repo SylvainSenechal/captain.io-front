@@ -148,7 +148,7 @@ const Game = ({
           // 7.1 current queue position
           let currentX = movesPlayer.xy[0];
           let currentY = movesPlayer.xy[1];
-          canvas.ctx.strokeStyle = "white";
+          canvas.ctx.strokeStyle = "rgb(175,175,175)";
           canvas.ctx.strokeRect(
             currentX * GRID_SIZE + 3,
             currentY * GRID_SIZE + 3,
@@ -157,6 +157,7 @@ const Game = ({
           );
           // 7.2 whole queue
           canvas.ctx.strokeStyle = "black";
+          let queueWidthModifier = 0;
           for (let move of movesPlayer.queued_moves) {
             if (move === "Up") {
               currentY--;
@@ -168,11 +169,12 @@ const Game = ({
               currentX++;
             }
             canvas.ctx.strokeRect(
-              currentX * GRID_SIZE + 3,
-              currentY * GRID_SIZE + 3,
-              GRID_SIZE - 6,
-              GRID_SIZE - 6
+              currentX * GRID_SIZE + 3 + queueWidthModifier,
+              currentY * GRID_SIZE + 3 + queueWidthModifier,
+              GRID_SIZE - 6 - queueWidthModifier * 2,
+              GRID_SIZE - 6 - queueWidthModifier * 2
             );
+            queueWidthModifier++;
           }
         }
       }
