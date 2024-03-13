@@ -10,6 +10,7 @@ import imgCastle from "/src/assets/castle.png";
 // https://game-icons.net/1x1/delapouite/mountain-cave.html#download
 
 // todo : display is websocket connected + button to reconnect
+// todo : display tick number
 const envData = {
   apiURL:
     process.env.NODE_ENV === "production"

@@ -74,6 +74,7 @@ const Game = ({
 
           // 3. Draw occupied tiles background color
           if (game.board_game[i][j].status === "Occupied") {
+            // todo : replace with map["Grey"] => "rgba(..)"
             const color =
               game.score_board[game.board_game[i][j].player_name].color;
             if (color == "Grey") {
@@ -84,6 +85,10 @@ const Game = ({
               canvas.ctx.fillStyle = "rgba(0, 0, 255, 0.8)";
             } else if (color === "Pink") {
               canvas.ctx.fillStyle = "rgba(255, 0, 255, 0.8)";
+            } else if (color === "Green") {
+              canvas.ctx.fillStyle = "rgba(0, 255, 0, 0.8)";
+            } else if (color === "Yellow") {
+              canvas.ctx.fillStyle = "rgba(255, 255, 0, 0.8)";
             }
             canvas.ctx.fillRect(
               i * GRID_SIZE,

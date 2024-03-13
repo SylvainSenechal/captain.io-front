@@ -37,7 +37,7 @@ const GameMenu = ({
     event.preventDefault();
     try {
       let newName = await get(`/players/name/random`);
-      setUpdatePlayerName(newName);
+      checkValidPlayerName(newName);
     } catch (error) {
       console.log("requestRandomName error : " + error);
     }
@@ -63,7 +63,6 @@ const GameMenu = ({
   return (
     <div className="main">
       <div> Connected players {nbPlayers}</div>
-      <div> playerUuid {playerInfos.uuid}</div>
       <div> playerName {playerInfos.name}</div>
       <form onSubmit={updateName}>
         <label htmlFor="playername"> pick playername </label>
