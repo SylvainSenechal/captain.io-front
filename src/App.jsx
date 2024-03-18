@@ -167,7 +167,7 @@ function App() {
 
   return inGame ? (
     <div className="frontPage">
-      <h1 className="appTitle">Captain.io</h1>
+      <h1 className="appTitle">Lemgo.io</h1>
       <Ping
         socket={socket}
         isConnected={isConnected}
@@ -191,7 +191,7 @@ function App() {
     </div>
   ) : (
     <div className="frontPage">
-      <h1 className="appTitle">Captain.io</h1>
+      <h1 className="appTitle">Lemgo.io</h1>
       <Ping
         socket={socket}
         isConnected={isConnected}
