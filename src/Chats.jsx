@@ -12,19 +12,19 @@ const Chats = ({ socket, playingInLobbyID, globalChat, lobbyChat }) => {
   const sendNewLobbyMessage = (event) => {
     event.preventDefault();
     if (playingInLobbyID != -1) {
-      socket.send(
-        "/sendLobbyMessage " + playingInLobbyID + " " + newLobbyMessage
-      );
+      socket.send("/sendLobbyMessage " + " " + newLobbyMessage);
       setNewLobbyMessage("");
     }
   };
 
   return (
     <>
-      <div className="globalChat">
+      <div className="globalChat" id="blbl">
         <div className="messagesList" id="globalMessages">
           {globalChat.map((message, idMessage) => (
-            <div> message: {message.message} </div>
+            <div>
+              {message.poster}: {message.message}{" "}
+            </div>
           ))}
         </div>
         <form className="formPostMessage" onSubmit={sendNewGlobalMessage}>
@@ -44,7 +44,9 @@ const Chats = ({ socket, playingInLobbyID, globalChat, lobbyChat }) => {
           <>
             <div className="messagesList" id="lobbyMessages">
               {lobbyChat.map((message, idMessage) => (
-                <div> message: {message.message} </div>
+                <div>
+                  {message.poster}: {message.message}
+                </div>
               ))}
             </div>
             <form className="formPostMessage" onSubmit={sendNewLobbyMessage}>

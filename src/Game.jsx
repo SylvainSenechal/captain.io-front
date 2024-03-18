@@ -216,6 +216,7 @@ const Game = ({
   return (
     <>
       <div className="main">
+        <div> tick {game.tick}</div>
         <canvas id="myCanvas"></canvas>
       </div>
       <ScoreBoard scoreBoard={scoreBoard} />

@@ -28,7 +28,10 @@ const Ping = ({ socket, isConnected, eventData, nbEventData }) => {
 
   return (
     <div className="ping">
-      <button onClick={() => ping()}>ping</button>
+      <a href="www.linkedin.com/in/sylvainsenechal" target="_blank">
+        {" "}
+        By Sylvain Senechal ➡️{" "}
+      </a>
       <div>latency {latency}</div>
     </div>
   );

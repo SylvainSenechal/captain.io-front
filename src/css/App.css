@@ -5,8 +5,8 @@
   grid-template-columns: repeat(8, 1fr);
   grid-template-rows: 1fr 7fr 1fr;
   grid-template-areas: "ping appTitle appTitle appTitle appTitle appTitle appTitle ."
-                      ". main main main main main main ."
-                      "global-chat global-chat footer footer footer footer lobbyChat lobbyChat";
+                      "playerList main main main main main main ."
+                      "global-chat global-chat global-chat footer footer lobbyChat lobbyChat lobbyChat";
   justify-items: stretch;
   align-items: center;
   justify-content: start;
@@ -19,7 +19,7 @@
   align-items: center;
   padding: 10px;
   margin: 30px;
-  box-shadow: 1px 2px 5px rgb(0 0 0 / 15%);
+  box-shadow: 1px 2px 5px 3px rgb(0 0 0 / 15%);
   border-radius: 20px;
 }
 
@@ -30,21 +30,23 @@
   align-items: center;
   padding: 10px;
   margin: 10px;
-  box-shadow: 1px 2px 5px rgb(0 0 0 / 15%);
+  box-shadow: 1px 2px 5px 3px rgb(0 0 0 / 15%);
   border-radius: 20px;
 }
 
 .ping {
   grid-area: ping;
+  margin-left: 10%;
 }
 
 .lobbiesMenu {
-  width: 400px;
+  width: 60%;
 }
 
 .lobbyPresentation {
   display: flex;
   justify-content: space-between;
+  align-items: center;
 }
 
 .buttonForbidden {
@@ -56,21 +58,63 @@
 }
 
 .buttonJoinLobby {
-  background-color: red;
+  background-color: #1c7d15;
 }
 
 #requestRandomName {
   all: revert;
+  margin-left: 1%;
+}
+#setName {
+  margin-left: 1%;  
 }
 
 #canEditPlayername {
   border-color: green;
-  border-radius: 7px;
-  border-width: 7px;
+  border-radius: 3px;
+  border-width: 2px;
 }
 
 #cantEditPlayername {
   border-color: red;
-  border-radius: 7px;
-  border-width: 7px;
+  border-radius: 4px;
+  border-width: 3px;
+}
+
+
+.updateName {
+  display: flex;
+  margin-bottom: 1%;
+}
+
+#playerName {
+  margin-bottom: 100px;
+  font-size: 22px;
+}
+
+.connectedPlayer {
+  grid-area: playerList;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 95%;
+  margin-left: 5%;
+  height: 40%;
+}
+
+.playerList, .playerList th, .playerList td {
+  border-collapse: collapse;
+  border: 2px solid rgb(98, 115, 95);
+}
+
+.playerList {
+  display: block;
+  overflow-y: auto;
+  overflow-x: hidden;
+  width: 100%;
+  max-height: 100%;
+}
+
+td, th {
+  width: 100%;
 }

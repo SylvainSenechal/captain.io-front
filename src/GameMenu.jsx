@@ -5,7 +5,6 @@ import { get, put, post } from "./utils/Requests";
 
 const GameMenu = ({
   socket,
-  nbPlayers,
   playerInfos,
   setPlayerInfos,
   lobbiesStatus,
@@ -62,10 +61,12 @@ const GameMenu = ({
 
   return (
     <div className="main">
-      <div> Connected players {nbPlayers}</div>
-      <div> playerName {playerInfos.name}</div>
-      <form onSubmit={updateName}>
-        <label htmlFor="playername"> pick playername </label>
+      <div id="playerName">
+        Welcome <b> {playerInfos.name}</b>{" "}
+      </div>
+      <label htmlFor="playername"> Update your name </label>
+      <form className="updateName" onSubmit={updateName}>
+        {/* todo : simplify ternary.. */}
         {canEditName.is_valid || updatePlayerName === "" ? (
           <>
             <input
@@ -76,7 +77,7 @@ const GameMenu = ({
               onChange={(e) => checkValidPlayerName(e.target.value)}
               required
             />
-            <input type="submit" value="Set" />
+            <input id="setName" type="submit" value="Set" />
             <button
               id="requestRandomName"
               onClick={(e) => requestRandomName(e)}
@@ -94,17 +95,23 @@ const GameMenu = ({
               onChange={(e) => checkValidPlayerName(e.target.value)}
               required
             />
-            <input disabled type="submit" value="Set" />
+            <input id="setName" disabled type="submit" value="Set" />
             <button
               id="requestRandomName"
               onClick={(e) => requestRandomName(e)}
             >
               random
             </button>
-            <div> You can't use this player name : {canEditName.reason} </div>
+            <div> </div>
           </>
         )}
       </form>
+      {canEditName.is_valid || updatePlayerName === "" ? (
+        <></>
+      ) : (
+        <div> You can't use this player name : {canEditName.reason} </div>
+      )}
+
       <div className="lobbiesMenu">
         {lobbiesStatus.map((lobby, id) => {
           let startsIn = Math.floor(
@@ -125,7 +132,7 @@ const GameMenu = ({
                       )}
                     </span>
                     <span>
-                      [{lobby.nb_connected} / {lobby.player_capacity}]{" "}
+                      [{lobby.player_names.length} / {lobby.player_capacity}]{" "}
                     </span>
                   </div>
 
@@ -141,7 +148,7 @@ const GameMenu = ({
                   <div>
                     <span> {lobby.status} </span>
                     <span>
-                      [{lobby.nb_connected} / {lobby.player_capacity}]
+                      [{lobby.player_names.length} / {lobby.player_capacity}]
                     </span>
                   </div>
                   <button

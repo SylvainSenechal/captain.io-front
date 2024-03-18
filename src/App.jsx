@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { get, put } from "./utils/Requests";
 import Game from "./Game";
 import GameMenu from "./GameMenu";
+import PlayerList from "./PlayerList";
 import Ping from "./Ping";
 import Chats from "./Chats";
 import imgMountain from "/src/assets/mountain.png";
@@ -11,6 +12,11 @@ import imgCastle from "/src/assets/castle.png";
 
 // todo : display is websocket connected + button to reconnect
 // todo : display tick number
+// todo : fix black/white theme
+// todo : show game stats/leaderboard
+
+// todo : css dont use pixel
+// todo : run front without backend on : have a clean page when cannot connect
 const envData = {
   apiURL:
     process.env.NODE_ENV === "production"
@@ -37,7 +43,7 @@ function App() {
 
   const [currentTime, setCurrentTime] = useState(new Date());
   const [playingInLobbyID, setPlayingInLobbyID] = useState(-1);
-  const [nbPlayers, setNbPlayers] = useState(0);
+  const [connectedPlayerNames, setConnectedPlayerNames] = useState([]);
   const [lobbiesStatus, setLobbiesStatus] = useState([]);
   const [isConnected, setIsConnected] = useState(false);
 
@@ -114,42 +120,42 @@ function App() {
       // todo : print winner, only set false after clicking "ok" dialog
     } else if (event.data.startsWith("/lobbiesGeneralUpdate")) {
       setLobbiesStatus(JSON.parse(event.data.split(" ")[1]).lobbies);
-      setNbPlayers(
-        JSON.parse(event.data.split(" ")[1]).total_players_connected
+      setConnectedPlayerNames(
+        JSON.parse(event.data.split(" ")[1]).connected_players
       );
     } else if (event.data.startsWith("/lobbyJoined")) {
       setPlayingInLobbyID(event.data.split(" ")[1]);
     } else if (event.data.startsWith("/globalChatSync")) {
       setGlobalChat(JSON.parse(event.data.substring(16)));
-      scrollGlobalBottom("globalMessages");
+      scrollBottom("globalMessages");
     } else if (event.data.startsWith("/globalChatNewMessage")) {
       setGlobalChat((previousChat) => [
         ...previousChat,
         JSON.parse(event.data.substring(22)),
       ]);
-      scrollGlobalBottom("globalMessages");
+      scrollBottom("globalMessages");
     } else if (event.data.startsWith("/lobbyChatSync")) {
       setLobbyChat(JSON.parse(event.data.substring(15)));
-      scrollGlobalBottom("lobbyMessages");
+      scrollBottom("lobbyMessages");
     } else if (event.data.startsWith("/lobbyChatNewMessage")) {
       setLobbyChat((previousChat) => [
         ...previousChat,
         JSON.parse(event.data.substring(21)),
       ]);
-      scrollGlobalBottom("lobbyMessages");
+      scrollBottom("lobbyMessages");
     } else if (event.data.startsWith("/myMoves")) {
       const moves = JSON.parse(event.data.substring(9));
       setMovesPlayer({ queued_moves: moves.queued_moves, xy: moves.xy });
     }
   };
-  const scrollGlobalBottom = (idMessagesList) => {
+  const scrollBottom = (idMessagesList) => {
     // Scroll to the bottom of the messages list
-    // todo : not scrolling completely at the bottom..
-    // todo : not working when loading messages list for the first time
-    const messageDiv = document.getElementById(idMessagesList);
-    const messagesDivViewHeight = messageDiv.clientHeight; // The height that we can view
-    const messagesDivHeight = messageDiv.scrollHeight; // The height if we could view the whole div with a big monitor
-    messageDiv.scroll(0, messagesDivHeight - messagesDivViewHeight);
+    setTimeout(function () {
+      const messageDiv = document.getElementById(idMessagesList);
+      const messagesDivViewHeight = messageDiv.clientHeight; // The height that we can view
+      const messagesDivHeight = messageDiv.scrollHeight; // The height if we could view the whole div with a big monitor
+      messageDiv.scroll(0, messagesDivHeight - messagesDivViewHeight);
+    }, 10);
   };
 
   useEffect(() => {
@@ -192,9 +198,10 @@ function App() {
         eventData={eventData}
         nbEventData={nbEventData}
       />
+      <PlayerList connectedPlayerNames={connectedPlayerNames} />
       <GameMenu
         socket={socket}
-        nbPlayers={nbPlayers}
+        connectedPlayerNames={connectedPlayerNames}
         playerInfos={playerInfos}
         setPlayerInfos={setPlayerInfos}
         lobbiesStatus={lobbiesStatus}

@@ -1,4 +1,4 @@
-.scoreBoard, th, td {
+.scoreBoard, .scoreBoard th, .scoreBoard td {
     border-collapse: collapse;
     border: 3px solid purple;
 }
